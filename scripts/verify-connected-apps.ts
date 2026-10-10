@@ -173,7 +173,11 @@ try {
   // Deliberately blocked window.open leaves a native, safe authorization link.
   await evaluate("window.__blockOAuth=true");
   pauseAuthorize(); await click("Connect securely");
-  assert.equal(attempts, 5); release();
+  assert.equal(attempts, 5);
+  // The real authorize route emits this message patch before the URL arrives:
+  // dismissed changes from absent to false, while this is still the same card.
+  // It must not cancel the in-flight opening or discard the returned link.
+  await click("Card authorizing"); release();
   await checkLink("[data-tour=connector] a[target=_blank]", 5);
   await wait("document.body.textContent.includes('blocked')");
   await command("screenshot", join(evidence, "card-popup-blocked.png"), "--full");

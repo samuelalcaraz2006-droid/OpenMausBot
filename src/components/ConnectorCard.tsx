@@ -15,6 +15,9 @@ import { ASK_PRIMARY_BUTTON, ASK_QUIET_BUTTON, AskCard, AskSettledLine } from ".
 
 export function ConnectorCard({ botId, threadId, message }: { botId: string; threadId: string; message: Message }) {
   const connector = message.connector!;
+  // Omitted and false both mean the same active card. The authorize route
+  // fills in false before returning its URL; that update must not cancel it.
+  const dismissed = connector.dismissed === true;
   const [busy, setBusy] = useState(false);
   const [localError, setLocalError] = useState<string | { key: LocaleKey } | null>(null);
   const [authorization, setAuthorization] = useState<(PendingAuthorization & { target: string }) | null>(null);
@@ -36,7 +39,7 @@ export function ConnectorCard({ botId, threadId, message }: { botId: string; thr
       opening.current?.cancel();
       opening.current = null;
     };
-  }, [target, connector.dismissed]);
+  }, [target, dismissed]);
   const checkStatus = useCallback(async () => {
     const result = await api(`${endpoint}/status?threadId=${encodeURIComponent(threadId)}`);
     return Boolean(result.connected);
